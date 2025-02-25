@@ -1,52 +1,36 @@
-/**
- * Autora: Laura Cercas Ramos
- * Proyecto: TFM Integración Continua con GitHub Actions
- * Fecha: 04/06/2024
- * Cambios: José R. Hilera (2024) para eliminar la parte cliente de la aplicación original
- */
-
 package com.lauracercas.moviecards.service.actor;
 
 import com.lauracercas.moviecards.model.Actor;
 import com.lauracercas.moviecards.repositories.ActorJPA;
-import org.springframework.stereotype.Service;
-import java.util.List;
-
-//Imports añadidos
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List; // 已添加的 import
 import java.util.Optional;
 
 @Service
 public class ActorServiceImpl implements ActorService {
 
-    // private final ActorJPA actorJPA;
-    // public ActorServiceImpl(ActorJPA actorJPA) {
-    // this.actorJPA = actorJPA;
-    // }
     @Autowired
-    ActorJPA actorJPA;
+    private ActorJPA actorJPA;
 
     @Override
     public List<Actor> getAllActors() {
-        return actorJPA.findAll();
+        return actorJPA.findAll();  // 获取所有演员
+    }
+
+    @Override
+    public Actor getActorById(Integer id) {
+        return actorJPA.findById(id).orElse(null);  // 根据 ID 获取演员，如果没有找到则返回 null
     }
 
     @Override
     public Actor save(Actor actor) {
-        return actorJPA.save(actor);
+        return actorJPA.save(actor);  // 保存演员
     }
 
-    // @Override
-    // public Actor getActorById(Integer actorId) {
-    // return actorJPA.getById(actorId);
-    // }
     @Override
-    public Actor getActorById(Integer actorId) {
-        Optional<Actor> optional = actorJPA.findById(actorId);
-        if (optional.isPresent()) {
-            return optional.get();
-        }
-        return null;
+    public void deleteActorById(Integer id) {
+        actorJPA.deleteById(id);  // 根据 ID 删除演员
     }
-
 }

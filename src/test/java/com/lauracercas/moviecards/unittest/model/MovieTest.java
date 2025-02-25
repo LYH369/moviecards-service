@@ -81,7 +81,7 @@ public class MovieTest {
     void testAddActor() {
         List<Actor> actorsExample = new ArrayList<Actor>();
         movie.setActors(actorsExample);
-        Actor actorExample = new Actor(3,"Un actor");
+        Actor actorExample = new Actor();
         movie.addActor(actorExample);
         assert(movie.getActors().contains(actorExample));
     }
@@ -89,7 +89,7 @@ public class MovieTest {
     @Test
     void testExistActorInMovie() {
         List<Actor> actorsExample = new ArrayList<Actor>();
-        Actor actorExample = new Actor(4,"Un actor");
+        Actor actorExample = new Actor();
         actorsExample.add(actorExample);
         movie.setActors(actorsExample);
         assert(movie.existActorInMovie(actorExample));

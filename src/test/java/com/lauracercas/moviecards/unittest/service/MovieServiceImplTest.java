@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -34,7 +33,6 @@ class MovieServiceImplTest {
     @Mock
     private MovieJPA movieJPA;
     
-    // private MovieServiceImpl sut;
     @InjectMocks // auto inject movieJPA
     private MovieService sut = new MovieServiceImpl();
 
@@ -43,7 +41,6 @@ class MovieServiceImplTest {
     @BeforeEach
     public void setUp() {
         closeable = openMocks(this);
-        // sut = new MovieServiceImpl();
     }
 
     @AfterEach
@@ -51,6 +48,9 @@ class MovieServiceImplTest {
         closeable.close();
     }
 
+    /**
+     * 测试获取所有电影功能
+     */
     @Test
     public void shouldGetAllMovies() {
         List<Movie> movies = new ArrayList<>();
@@ -64,13 +64,15 @@ class MovieServiceImplTest {
         assertEquals(2, result.size());
     }
 
+    /**
+     * 测试根据 ID 获取电影功能
+     */
     @Test
     public void shouldGetMovieById() {
         Movie movie = new Movie();
         movie.setId(1);
         movie.setTitle("Sample Movie");
 
-        // when(movieJPA.getById(anyInt())).thenReturn(movie);
         when(movieJPA.findById(anyInt())).thenReturn(Optional.of(movie));
 
         Movie result = sut.getMovieById(1);
@@ -79,6 +81,9 @@ class MovieServiceImplTest {
         assertEquals("Sample Movie", result.getTitle());
     }
 
+    /**
+     * 测试保存电影功能
+     */
     @Test
     public void shouldSaveMovie() {
         Movie movie = new Movie();
@@ -90,5 +95,4 @@ class MovieServiceImplTest {
 
         assertEquals("New Movie", result.getTitle());
     }
-
 }

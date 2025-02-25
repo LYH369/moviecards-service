@@ -1,102 +1,93 @@
-/**
- * Autora: Laura Cercas Ramos
- * Proyecto: TFM Integración Continua con GitHub Actions
- * Fecha: 04/06/2024
- * Cambios: José R. Hilera (2024) para eliminar la parte cliente de la aplicación original
- */
-
 package com.lauracercas.moviecards.controller;
 
-//import com.lauracercas.moviecards.model.Actor;
 import com.lauracercas.moviecards.model.Movie;
+import com.lauracercas.moviecards.service.actor.ActorService;
 import com.lauracercas.moviecards.service.movie.MovieService;
-//import com.lauracercas.moviecards.util.Messages;
-//import org.springframework.stereotype.Controller;
-//import org.springframework.ui.Model;
-//import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import java.util.List;
-
-//Imports añadidos
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
-//@Controller
-@RestController
+@Controller
 public class MovieController {
 
-    // private final MovieService movieService;
-    // public MovieController(MovieService movieService) {
-    // this.movieService = movieService;
-    // }
     @Autowired
     MovieService movieService;
 
-    // @GetMapping("movies")
-    // public String getMoviesList(Model model) {
-    // model.addAttribute("movies", movieService.getAllMovies());
-    // return "movies/list";
-    // }
+    @Autowired
+    ActorService actorService;
+
+    /**
+     * 显示电影列表
+     */
     @GetMapping("/movies")
-    public List<Movie> getMoviesList() {
-        return (movieService.getAllMovies());
+    public String getMoviesList(Model model) {
+        model.addAttribute("movies", movieService.getAllMovies());
+        return "movies"; // 确保有 movies.html 文件
     }
 
-    // @GetMapping("movies/new")
-    // public String newMovie(Model model) {
-    // model.addAttribute("movie", new Movie());
-    // model.addAttribute("title", Messages.NEW_MOVIE_TITLE);
-    // return "movies/form";
-    // }
+    /**
+     * 显示添加新电影表单
+     */
+    @GetMapping("/movies/new")
+    public String newMovieForm(Model model) {
+        model.addAttribute("movie", new Movie());
+        return "movie_form"; // 确保有 movie_form.html 文件
+    }
+
+    /**
+     * 保存电影（新建或更新）
+     */
     @PostMapping("/movies")
-    public void newMovie(@RequestBody Movie movie) {
+    public String saveMovie(@ModelAttribute("movie") Movie movie) {
         movieService.save(movie);
+        return "redirect:/movies";
     }
 
-    // @PostMapping("saveMovie")
-    // public String saveMovie(@ModelAttribute Movie movie, BindingResult result,
-    // Model model) {
-    // if (result.hasErrors()) {
-    // return "movies/form";
-    // }
-    // Movie movieSaved = movieService.save(movie);
-    // if (movieSaved.getId() != null) {
-    // model.addAttribute("message", Messages.UPDATED_MOVIE_SUCCESS);
-    // } else {
-    // model.addAttribute("message", Messages.SAVED_MOVIE_SUCCESS);
-    // }
-    // model.addAttribute("movie", movieSaved);
-    // model.addAttribute("title", Messages.EDIT_MOVIE_TITLE);
-    // return "movies/form";
-    // }
-    @PutMapping("/movies")
-    public void saveMovie(@RequestBody Movie movie) {
-        movieService.save(movie);
+    /**
+     * 编辑电影
+     */
+    @GetMapping("/movies/{movieId}")
+    public String editMovie(@PathVariable Integer movieId, Model model) {
+        try {
+            Movie movie = movieService.getMovieById(movieId);
+            if (movie == null) {
+                throw new RuntimeException("未找到对应的电影 ID: " + movieId);
+            }
+            model.addAttribute("movie", movie);
+            return "movie_form"; // 使用同一个表单进行编辑
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error"; // 确保有 error.html 页面
+        }
     }
 
-    // @GetMapping("editMovie/{movieId}")
-    // public String editMovie(@PathVariable Integer movieId, Model model) {
-    // Movie movie = movieService.getMovieById(movieId);
-    // List<Actor> actors = movie.getActors();
-    // model.addAttribute("movie", movie);
-    // model.addAttribute("actors", actors);
-    // model.addAttribute("title", Messages.EDIT_MOVIE_TITLE);
-    // return "movies/form";
-    // }
-    @GetMapping("movies/{movieId}")
-    public Movie editMovie(@PathVariable Integer movieId) {
-        return movieService.getMovieById(movieId);
+    /**
+     * 电影详情页，包括已关联的演员和可添加的演员
+     */
+    @GetMapping("/movies/detail/{movieId}")
+    public String movieDetail(@PathVariable Integer movieId, Model model) {
+        Movie movie = movieService.getMovieById(movieId);
+        model.addAttribute("movie", movie);
+        model.addAttribute("allActors", actorService.getAllActors());
+        return "movie_detail"; // 确保 movie_detail.html 存在
     }
 
-    // Añadido
-    @GetMapping("/movies/insc/{idActor}/{idMovie}")
-    public void registerCard(@PathVariable("idActor") Integer idActor, @PathVariable("idMovie") Integer idMovie) {
-        movieService.registerActorInMovie(idActor, idMovie);
+    /**
+     * 为电影添加演员
+     */
+    @PostMapping("/movies/addActor/{movieId}")
+    public String addActorToMovie(@PathVariable Integer movieId, @RequestParam Integer actorId) {
+        movieService.registerActorInMovie(actorId, movieId);
+        return "redirect:/movies/detail/" + movieId;
     }
 
+    /**
+     * 从电影中移除演员
+     */
+    @PostMapping("/movies/removeActor/{movieId}/{actorId}")
+    public String removeActorFromMovie(@PathVariable Integer movieId, @PathVariable Integer actorId) {
+        movieService.removeActorFromMovie(actorId, movieId);
+        return "redirect:/movies/detail/" + movieId;
+    }
 }

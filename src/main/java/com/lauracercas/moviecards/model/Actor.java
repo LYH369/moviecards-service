@@ -1,15 +1,9 @@
-/**
- * Autora: Laura Cercas Ramos
- * Proyecto: TFM Integración Continua con GitHub Actions
- * Fecha: 04/06/2024
- * Cambios: José R. Hilera (2024) para eliminar la parte cliente de la aplicación original
- */
-
 package com.lauracercas.moviecards.model;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -27,13 +21,14 @@ public class Actor {
 
     private String country;
 
-    @ManyToMany(mappedBy = "actors")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")  // 确保日期格式正确
+    private Date deadDate;  // 添加死日期字段
 
-    @JsonIgnoreProperties("actors") // Añadido
+    @ManyToMany(mappedBy = "actors")
+    @JsonIgnoreProperties("actors") // 防止序列化循环引用
     private List<Movie> movies;
 
-    public Actor() {
-    }
+    public Actor() {}
 
     public Actor(Integer id, String name) {
         this.id = id;
@@ -72,6 +67,14 @@ public class Actor {
         this.country = country;
     }
 
+    public Date getDeadDate() {  // 添加 getter 方法
+        return deadDate;
+    }
+
+    public void setDeadDate(Date deadDate) {  // 添加 setter 方法
+        this.deadDate = deadDate;
+    }
+
     public List<Movie> getMovies() {
         return movies;
     }
@@ -82,17 +85,18 @@ public class Actor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Actor actor = (Actor) o;
-        return Objects.equals(id, actor.id) && Objects.equals(name, actor.name)
-                && Objects.equals(birthDate, actor.birthDate) && Objects.equals(country, actor.country);
+        return Objects.equals(id, actor.id) &&
+               Objects.equals(name, actor.name) &&
+               Objects.equals(birthDate, actor.birthDate) &&
+               Objects.equals(country, actor.country) &&
+               Objects.equals(deadDate, actor.deadDate); // 比较死日期
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, birthDate, country);
+        return Objects.hash(id, name, birthDate, country, deadDate); // 包含死日期
     }
 }
